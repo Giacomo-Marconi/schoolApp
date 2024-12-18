@@ -19,6 +19,19 @@ class Database:
         self.cursor.close()
         self.connection.close()
         
+    
+    def register(self, username, password):
+        query = "insert into user(username, password) values(%s, %s)"
+        try:
+            self.cursor.execute(query, (username, password))
+            self.connection.commit()
+            self.close()
+            return True
+        except:
+            self.close()
+            return False
+        
+    
     def login(self, username, password):
         query = "select * from user where username = %s and password = %s"
         self.cursor.execute(query, (username, password))
@@ -54,18 +67,51 @@ class Database:
 
 
     def getMaterie(self, token):
-        q = "select m.name, m.id from materie m, device d where d.idU = m.idU and d.token = %s"
+        q = "select m.nome, m.id from materie m, device d where d.idU = m.idU and d.token = %s"
         self.cursor.execute(q, (token,))
         result = self.cursor.fetchall()
         self.close()
         return result
     
+    
+    def addMateria(self, token, materia):
+        query = "insert into materie(nome, idU) values(%s, (select idU from device where token = %s))"
+        try:    
+            self.cursor.execute(query, (materia, token))
+            self.connection.commit()
+            self.close()
+            return True
+        except:
+            self.close()
+            return False
+    
+    
+    def getVoti(self, token, materia=None):
+        if(materia is None):
+            query = "select v.voto, v.data, v.descr, p.nome, p.cognome, m.nome from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s order by v.data desc"
+            self.cursor.execute(query, (token,))
+        else:
+            query = "select v.voto, v.data, v.desc, p.nome, p.cognome, m.nome from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s and m.nome = %s order by v.data desc"
+            self.cursor.execute(query, (token, materia))
+        result = self.cursor.fetchall()
+        self.close()
+        return result
 
 
-
+    def addVoto(self, token, voto, data, descr, idProf, materia):
+        query = "insert into voti(voto, data, descr, idP, idU, idM) values(%s, %s, %s, %s, (select idU from device where token = %s), (select id from materie where nome = %s and idU = (select idU from device where token = %s)))"
+        try:
+            self.cursor.execute(query, (voto, data, descr, idProf, token, materia, token))
+            self.connection.commit()
+            self.close()
+            return True
+        except:
+            self.close()
+            return False
 
 def main():
-    db = Database()
+    Database()
+
 
 
 
