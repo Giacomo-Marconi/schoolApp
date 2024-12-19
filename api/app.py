@@ -88,22 +88,23 @@ def getVoti():
     return jsonify({"status": "error"}), 401
 
 
+
 @app.route("/api/voti", methods=["POST"])
 def addVoto():
     db = dbm.Database()
     data = request.get_json()
-    if 'token' not in request.headers or 'voto' not in data or 'data' not in data or 'descr' not in data or 'idProf' not in data  or 'materia' not in data:
+    if 'token' not in request.headers or 'voto' not in data or 'data' not in data or 'descr' not in data or 'idP' not in data  or 'idM' not in data:
         return jsonify({"status": "error"}), 401
     
     token = request.headers['token']
     voto = data['voto']
-    data = data['data']
+    date = data['data']
     descr = data['descr']
-    idProf = data['idProf']
-    materia = data['materia']
+    idP = data['idP']
+    idM = data['idM']
     
     if(db.checkToken(token)!=None):
-        if(dbm.Database().addVoto(token, voto, data, descr, idProf, materia)):
+        if(dbm.Database().addVoto(token, voto, date, descr, idP, idM)):
             return jsonify({"status": "ok"}), 200
     return jsonify({"status": "error"}), 401
 
@@ -115,9 +116,26 @@ def getProfessori():
         return jsonify({"status": "error"}), 401
     token = request.headers['token']
     if(db.checkToken(token)!=None):
-        professori = dbm.Database().getProfessori()
+        professori = dbm.Database().getProfessori(token)
         return jsonify({"professori": professori}), 200
     return jsonify({"status": "error"}), 401
+
+
+@app.route("/api/professori", methods=["POST"])
+def addProfessore():
+    db = dbm.Database()
+    data = request.get_json()
+    if 'token' not in request.headers or 'nome' not in data or 'cognome' not in data or 'idM' not in data:
+        return jsonify({"status": "error"}), 401
+    token = request.headers['token']
+    nome = data['nome']
+    cognome = data['cognome']
+    idM = data['idM']
+    if(db.checkToken(token)!=None):
+        if(dbm.Database().addProfessore(token, nome, cognome, idM)):
+            return jsonify({"status": "ok"}), 200
+    return jsonify({"status": "error"}), 401
+
 
 
 

@@ -88,20 +88,37 @@ class Database:
     
     def getVoti(self, token, materia=None):
         if(materia is None):
-            query = "select v.voto, v.data, v.descr, p.nome, p.cognome, m.nome from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s order by v.data desc"
+            query = "select v.voto, v.data, v.descr, p.nome, p.cognome, m.nome materia from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s order by v.data desc"
             self.cursor.execute(query, (token,))
         else:
-            query = "select v.voto, v.data, v.desc, p.nome, p.cognome, m.nome from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s and m.nome = %s order by v.data desc"
+            query = "select v.voto, v.data, v.desc, p.nome, p.cognome, m.nome materia from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s and m.nome = %s order by v.data desc"
             self.cursor.execute(query, (token, materia))
         result = self.cursor.fetchall()
         self.close()
         return result
 
-
-    def addVoto(self, token, voto, data, descr, idProf, materia):
-        query = "insert into voti(voto, data, descr, idP, idU, idM) values(%s, %s, %s, %s, (select idU from device where token = %s), (select id from materie where nome = %s and idU = (select idU from device where token = %s)))"
+    def addVoto(self, token, voto, data, descr, idProf, idMateria):
+        query = "insert into voti(voto, data, descr, idP, idU, idM) values(%s, %s, %s, %s, (select idU from device where token = %s), %s)"
         try:
-            self.cursor.execute(query, (voto, data, descr, idProf, token, materia, token))
+            self.cursor.execute(query, (voto, data, descr, idProf, token, idMateria))
+            self.connection.commit()
+            self.close()
+            return True
+        except:
+            self.close()
+            return False
+        
+    def getProfessori(self, token):
+        query = "select p.nome, p.cognome, m.nome materia from professori p, materie m where p.idM = m.id and m.idU = (select idU from device where token = %s)"
+        self.cursor.execute(query, (token,))
+        result = self.cursor.fetchall()
+        self.close()
+        return result
+
+    def addProfessore(self, token, nome, cognome, idM):
+        query = "insert into professori(nome, cognome, idM, idU) values(%s, %s, %s, (select idU from device where token = %s))"
+        try:
+            self.cursor.execute(query, (nome, cognome, idM, token))
             self.connection.commit()
             self.close()
             return True
@@ -109,8 +126,16 @@ class Database:
             self.close()
             return False
 
+
+
+
+
+
+
+
 def main():
     Database()
+    
 
 
 
