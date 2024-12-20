@@ -1,9 +1,9 @@
 from flask import request, jsonify, Flask
 import db as dbm
+import flask_cors
 
 app = Flask(__name__)
-
-
+flask_cors.CORS(app)
 
 #401 errato
 #200 corretto
