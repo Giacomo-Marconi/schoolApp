@@ -1,3 +1,12 @@
+**/setting.json
+*/setting.json
+setting.json
+
+
+
+
+
+
 
 # Flutter/Dart specific
 *.dart_tool/
@@ -33,6 +42,8 @@ local.properties
 
 # Windows specific
 **/windows/
+
+
 
 # JetBrains IDEs
 .idea/
@@ -165,5 +176,3 @@ cython_debug/
 
 
 
-
-setting.json
