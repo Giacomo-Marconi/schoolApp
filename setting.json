@@ -1,0 +1,11 @@
+{
+    "db": {
+        "host": "figliolo.it",
+        "database": "schoolApp",
+        "username": "giacomo",
+        "password": "figliolo"
+    },
+    "server": {
+        "port": 3000
+    }
+}
