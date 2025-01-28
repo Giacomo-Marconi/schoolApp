@@ -5,6 +5,7 @@ import flask_cors
 app = Flask(__name__)
 flask_cors.CORS(app)
 
+#9d49670969b15d3bb62296fc25e3a8b1
 #401 errato
 #200 corretto
 
@@ -25,7 +26,6 @@ def register():
     
     return jsonify({"status": "error"}), 401
 
-
 @app.route("/api/login", methods=["POST"])
 def login():
     db = dbm.Database()
@@ -43,7 +43,6 @@ def login():
     
     return jsonify({"status": "error"}), 401
 
-
 @app.route("/api/materie", methods=["GET"])
 def getMaterie():
     db = dbm.Database()
@@ -54,7 +53,6 @@ def getMaterie():
         materie = dbm.Database().getMaterie(token)
         return jsonify({"materie": materie}), 200
     return jsonify({"status": "error"}), 401
-
 
 @app.route("/api/materie", methods=["POST"])
 def addMateria():
@@ -68,7 +66,6 @@ def addMateria():
         if(dbm.Database().addMateria(token, materia)):
             return jsonify({"status": "ok"}), 200
     return jsonify({"status": "error"}), 401
-
 
 @app.route("/api/voti", methods=["GET"])
 def getVoti():
@@ -86,8 +83,6 @@ def getVoti():
         voti = dbm.Database().getVoti(token)
         return jsonify({"voti": voti}), 200
     return jsonify({"status": "error"}), 401
-
-
 
 @app.route("/api/voti", methods=["POST"])
 def addVoto():
@@ -108,7 +103,6 @@ def addVoto():
             return jsonify({"status": "ok"}), 200
     return jsonify({"status": "error"}), 401
 
-
 @app.route("/api/professori", methods=["GET"])
 def getProfessori():
     db = dbm.Database()
@@ -119,7 +113,6 @@ def getProfessori():
         professori = dbm.Database().getProfessori(token)
         return jsonify({"professori": professori}), 200
     return jsonify({"status": "error"}), 401
-
 
 @app.route("/api/professori", methods=["POST"])
 def addProfessore():
@@ -141,4 +134,4 @@ def addProfessore():
 
 
 if(__name__ == "__main__"):
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=23456)

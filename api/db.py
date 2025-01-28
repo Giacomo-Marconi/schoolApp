@@ -67,7 +67,14 @@ class Database:
 
 
     def getMaterie(self, token):
-        q = "select m.nome, m.id from materie m, device d where d.idU = m.idU and d.token = %s"
+        q = """
+        
+        select m.nome, m.id, avg(v.voto) media
+        from materie m, device d, voti v 
+        where d.idU = m.idU and v.idU = d.idU and d.token = %s
+        group by m.nome, m.id
+        """
+        
         self.cursor.execute(q, (token,))
         result = self.cursor.fetchall()
         self.close()
