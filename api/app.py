@@ -88,18 +88,18 @@ def getVoti():
 def addVoto():
     db = dbm.Database()
     data = request.get_json()
-    if 'token' not in request.headers or 'voto' not in data or 'data' not in data or 'descr' not in data or 'idP' not in data  or 'idM' not in data:
+    if 'token' not in request.headers or 'voto' not in data or 'data' not in data or 'descr' not in data or 'idM' not in data:
         return jsonify({"status": "error"}), 401
     
     token = request.headers['token']
     voto = data['voto']
     date = data['data']
     descr = data['descr']
-    idP = data['idP']
+    #idP = data['idP']
     idM = data['idM']
     
     if(db.checkToken(token)!=None):
-        if(dbm.Database().addVoto(token, voto, date, descr, idP, idM)):
+        if(dbm.Database().addVoto(token, voto, date, descr, idM)):
             return jsonify({"status": "ok"}), 200
     return jsonify({"status": "error"}), 401
 

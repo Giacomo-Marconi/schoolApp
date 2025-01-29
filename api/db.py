@@ -70,7 +70,7 @@ class Database:
         q = """
         
         select m.nome, m.id, avg(v.voto) media
-        from materie m, device d, voti v 
+        from materie m, device d, voti v
         where d.idU = m.idU and v.idU = d.idU and d.token = %s
         group by m.nome, m.id
         """
@@ -95,19 +95,19 @@ class Database:
     
     def getVoti(self, token, materia=None):
         if(materia is None):
-            query = "select v.voto, v.data, v.descr, p.nome, p.cognome, m.nome materia from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s order by v.data desc"
+            query = "select v.voto, v.data, v.descr, m.nome materia from voti v, device d, materie m where v.idM = m.id and v.idU = d.idU and d.token = %s order by v.data desc"
             self.cursor.execute(query, (token,))
         else:
-            query = "select v.voto, v.data, v.desc, p.nome, p.cognome, m.nome materia from voti v, professori p, device d, materie m where v.idP = p.id and v.idM = m.id and v.idU = d.idU and d.token = %s and m.nome = %s order by v.data desc"
+            query = "select v.voto, v.data, v.desc, m.nome materia from voti v, device d, materie m where v.idM = m.id and v.idU = d.idU and d.token = %s and m.nome = %s order by v.data desc"
             self.cursor.execute(query, (token, materia))
         result = self.cursor.fetchall()
         self.close()
         return result
 
-    def addVoto(self, token, voto, data, descr, idProf, idMateria):
-        query = "insert into voti(voto, data, descr, idP, idU, idM) values(%s, %s, %s, %s, (select idU from device where token = %s), %s)"
+    def addVoto(self, token, voto, data, descr, idMateria):
+        query = "insert into voti(voto, data, descr, idU, idM) values(%s, %s, %s, (select idU from device where token = %s), %s)"
         try:
-            self.cursor.execute(query, (voto, data, descr, idProf, token, idMateria))
+            self.cursor.execute(query, (voto, data, descr, token, idMateria))
             self.connection.commit()
             self.close()
             return True
@@ -185,7 +185,7 @@ create table voti(
     voto float not null check(voto >= 0 and voto <= 10),
     data date not null,
     desc varchar(255),
-    idP int not null,
+    idP int,
     idU int not null,
     idM int not null,
     foreign key (idP) references professori(id),

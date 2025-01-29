@@ -1,28 +1,64 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-// import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+  String? authToken;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuthToken();
+  }
+
+  Future<void> _loadAuthToken() async {
+    String? token = await _storage.read(key: "auth_token");
+
+    setState(() {
+      authToken = token;
+      isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomePage(),
+    if (isLoading) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: authToken == null ? const LoginPage() : const HomePage(),
     );
   }
 }
+
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
+// ignore: library_private_types_in_public_api
   _HomePageState createState() => _HomePageState();
 }
 
@@ -33,10 +69,9 @@ class _HomePageState extends State<HomePage> {
     const HomeGridPage(),
     const VotiPage(),
     const AddVotoPage(),
-    const Placeholder(), // Placeholder per "Impostazioni"
+    const SettingsPage(),
   ];
 
-  // Funzione per gestire il cambio di pagina tramite la barra di navigazione
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -46,12 +81,49 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('School Stats'),
-        backgroundColor: const Color.fromARGB(255, 252, 66, 252),
+    //   appBar: AppBar(
+    //     // title: const Text('School Stats'),
+    //     title: const Text(
+    //         'School Stats',
+    //         style: TextStyle(
+    //           color: Colors.white,
+    //           fontSize: 24,
+    //           fontWeight: FontWeight.bold,
+    //         ),
+    //     ),
+    //     backgroundColor: const Color.fromARGB(255, 249, 131, 249),
+    //   ),
+    appBar: AppBar(
+  title: const Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+       Icon(
+        Icons.school, 
+        color: Colors.white,
       ),
+       SizedBox(width: 10),
+       Text(
+        'School Stats',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2, 
+        ),
+      ),
+    ],
+  ),
+  centerTitle: true,
+  backgroundColor: const Color.fromARGB(255, 249, 91, 249), 
+  elevation: 5, 
+  shadowColor: Colors.purple.withOpacity(0.3), 
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
+  ),
+),
+
       body: _pages[_selectedIndex],
-      // Barra di navigazione inferiore
+// Barra di navigazione inferiore
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -80,6 +152,8 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+
+
 class HomeGridPage extends StatefulWidget {
   const HomeGridPage({super.key});
 
@@ -91,6 +165,7 @@ class _HomeGridPageState extends State<HomeGridPage> {
   List<dynamic> items = [];
   bool isLoading = true;
   String? errorMessage;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -103,6 +178,15 @@ class _HomeGridPageState extends State<HomeGridPage> {
       isLoading = true;
       errorMessage = null;
     });
+
+    String? token = await _storage.read(key: "auth_token");
+    if (token == null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('http://184.174.34.61:20001/api/materie'),
@@ -199,13 +283,14 @@ class _HomeGridPageState extends State<HomeGridPage> {
         crossAxisCount: 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.8, // Regola il rapporto altezza/larghezza
+        childAspectRatio: 0.8,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        final progressValue = (item['media'] ?? 0) / 10;
-        final color = fromStringToColor(item["nomeCompleto"]);
+        final double progressValue = (item['media'] ?? 0) / 10;
+        // final color = fromStringToColor(item["nomeCompleto"]);
+        final color = progressValue*10>8.0 ? Colors.green : (progressValue*10>6.0 ? Colors.orange : Colors.red);
 
         return Container(
           decoration: BoxDecoration(
@@ -248,14 +333,15 @@ class _HomeGridPageState extends State<HomeGridPage> {
                   ),
                 ),
                 const SizedBox(
-                  height: 30,
+                  height: 15,
                   width: 1,
                 ),
                 Text(
                   item["nome"],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 25,
-                    color: Colors.black54,
+                    color: fromStringToColor(item["nomeCompleto"]),
+                    fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -268,6 +354,8 @@ class _HomeGridPageState extends State<HomeGridPage> {
   }
 }
 
+
+
 class VotiPage extends StatefulWidget {
   const VotiPage({super.key});
 
@@ -279,6 +367,7 @@ class _VotiPageState extends State<VotiPage> {
   List<Map<String, dynamic>> items = [];
   bool isLoading = true;
   String? errorMessage;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -291,12 +380,21 @@ class _VotiPageState extends State<VotiPage> {
       isLoading = true;
       errorMessage = null;
     });
+
+    String? token = await _storage.read(key: "auth_token");
+    if (token == null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
+
     try {
       final response = await http.get(
         Uri.parse('http://184.174.34.61:20001/api/voti'),
         headers: {
           'Content-Type': 'application/json',
-          'token': '9d49670969b15d3bb62296fc25e3a8b1'
+          'token': token,
         },
       );
       if (response.statusCode == 200) {
@@ -386,10 +484,14 @@ class _VotiPageState extends State<VotiPage> {
           margin: const EdgeInsets.symmetric(vertical: 5),
           child: ListTile(
             leading: CircleAvatar(
+              radius: 25,
               backgroundColor: fromStringToColor(items[index]['nomeCompleto']),
               child: Text(
                 items[index]['materia'].toString(),
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    ),
               ),
             ),
             title: Text(
@@ -398,7 +500,7 @@ class _VotiPageState extends State<VotiPage> {
                   color: fromStringToColor(items[index]['nomeCompleto']),
                   fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(items[index]['descr'].toString()),
+            subtitle: Text(items[index]['descr'] ?? ''),
           ),
         );
       },
@@ -419,103 +521,106 @@ class _AddVotoPageState extends State<AddVotoPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _descrController = TextEditingController();
   final TextEditingController _dataController = TextEditingController();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   String? _selectedMateria;
   String? _selectedVoto;
 
-Future<bool> sendVoto(Map<String, dynamic> voto) async {
-
-  try {
-    final response = await http.post(
-      Uri.parse('http://184.174.34.61:20001/api/voti'),
-      headers: {
-        'Content-Type': 'application/json',
-        'token': '9d49670969b15d3bb62296fc25e3a8b1',
-      },
-      body: jsonEncode(voto),
-    );
-
-    if (response.statusCode == 201) {
-      print("Voto inviato con successo!");
-      return true;
-    } else {
-      print("Errore durante l'invio del voto: ${response.statusCode}");
-      print("Risposta: ${response.body}");
+  Future<bool> sendVoto(Map<String, dynamic> voto) async {
+    String? token = await _storage.read(key: "auth_token");
+    if (token == null) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
       return false;
     }
-  } catch (e) {
-    print("Errore nella richiesta POST: $e");
-    return false;
+    try {
+
+      final response = await http.post(
+        Uri.parse('http://184.174.34.61:20001/api/voti'),
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token,
+        },
+        body: jsonEncode(voto),
+      );
+
+      if (response.statusCode == 200) {
+        print("Voto inviato con successo!");
+        return true;
+      } else {
+        print("Errore durante l'invio del voto: ${response.statusCode}");
+        print("Risposta: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Errore nella richiesta POST: $e");
+      return false;
+    }
   }
-}
 
   void _saveVoto() async {
     if (_formKey.currentState!.validate()) {
-        
-        if(_selectedVoto == null){
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Riinsersci voti')),
-            );
-            return;
-        }
-        
-        String votoSel = _selectedVoto!;
+      if (_selectedVoto == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Riinsersci voti')),
+        );
+        return;
+      }
 
-        double n = _selectedVoto == null ? 0 : double.parse(votoSel[0]);
-        
-        votoSel.contains('+') ? n += 0.25 : n;
-        votoSel.contains('½') ? n += 0.5 : n;
-        votoSel.contains('-') ? n -= 0.25 : n;
+      String votoSel = _selectedVoto!;
 
+      double n = _selectedVoto == null ? 0 : double.parse(votoSel[0]);
 
-      // Dati del voto
+      votoSel.contains('+') ? n += 0.25 : n;
+      votoSel.contains('½') ? n += 0.5 : n;
+      votoSel.contains('-') ? n -= 0.25 : n;
+
+// Dati del voto
       final voto = {
-        "materia": _selectedMateria,
-        "descrizione": _descrController.text,
+        "idM": _selectedMateria,
+        "descr": _descrController.text,
         "data": _dataController.text,
         "voto": n,
       };
 
-        print("Voto salvato: $voto");
-        try {
+      print("Voto salvato: $voto");
+      try {
         bool result = await sendVoto(voto);
 
         if (result) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Voto salvato con successo!')),
-            );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Voto salvato con successo!')),
+          );
         } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Errore durante il salvataggio del voto')),
-            );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Errore durante il salvataggio del voto')),
+          );
         }
-    } catch (e) {
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Errore: $e')),
+          SnackBar(content: Text('Errore: $e')),
         );
-    }finally{
+      } finally {
         _formKey.currentState!.reset();
         setState(() {
-            _selectedMateria = null;
+          _selectedMateria = null;
         });
         _descrController.clear();
         _dataController.clear();
         setState(() {
-            _selectedVoto = null;
+          _selectedVoto = null;
         });
-    }
-    }else{
-        print("Errore non validato");
+      }
+    } else {
+      print("Errore non validato");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //   appBar: AppBar(
-      //     title: const Text("Aggiungi Voto"),
-      //     backgroundColor: Colors.purple,
-      //   ),
       body: Padding(
         padding: const EdgeInsets.all(50.0),
         child: Form(
@@ -531,100 +636,145 @@ Future<bool> sendVoto(Map<String, dynamic> voto) async {
                     });
                   },
                 ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _descrController,
-                  decoration: const InputDecoration(labelText: "Descrizione"),
+                  decoration: InputDecoration(
+                    labelText: "Descrizione",
+                    labelStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    hintText: "Inserisci una descrizione",
+                    hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    filled: true,
+                    fillColor: Colors.purple.shade50,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.purple.shade200, width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.purple.shade700, width: 2.5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.red.shade300, width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.red.shade700, width: 2.5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.description,
+                      color: Colors.purple,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 20,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                    controller: _dataController,
-                    readOnly: true, // Impedisce l'input manuale
-                                decoration: InputDecoration(
-              labelText: "Data",
-              labelStyle: const TextStyle(
-                fontSize: 16,
-                color: Colors.purple,
-                fontWeight: FontWeight.bold,
-              ),
-              hintText: "Seleziona una data",
-              hintStyle: const TextStyle(
-                color: Colors.grey,
-                fontStyle: FontStyle.italic,
-              ),
-              filled: true,
-              fillColor: Colors.purple.shade50,
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple.shade200, width: 2),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple.shade700, width: 2.5),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.red.shade300, width: 2),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.red.shade700, width: 2.5),
-                borderRadius: BorderRadius.circular(15),
-              ),
-              prefixIcon: const Icon(
-                Icons.calendar_today,
-                color: Colors.purple,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 15,
-                horizontal: 20,
-              ),
-            ),
-            
-                    onTap: () async {
-                        DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                        builder: (context, child) {
-                            return Theme(
-                            data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(
-                                primary: Colors.purple, // Colore principale
-                                onPrimary: Colors.white, // Colore testo sul pulsante
-                                onSurface: Colors.black, // Colore del testo nella lista
-                                ),
-                                textButtonTheme: TextButtonThemeData(
-                                style: TextButton.styleFrom(
-                                    foregroundColor: Colors.purple, // Colore dei pulsanti
-                                ),
-                                ),
-                            ),
-                            child: child!,
-                            );
-                        },
-                        );
-
-                        if (pickedDate != null) {
-                        // Aggiorna il controller con la data selezionata
-                        String formattedDate = "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
-                        _dataController.text = formattedDate;
-                        }
-                    },
-                    validator: (value) {
-                        if (value == null || value.isEmpty) {
-                        return "Inserisci la data";
-                        }
-                        return null;
-                    },
+                  controller: _dataController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Data",
+                    labelStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold,
                     ),
+                    hintText: "Seleziona una data",
+                    hintStyle: const TextStyle(
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    filled: true,
+                    fillColor: Colors.purple.shade50,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.purple.shade200, width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.purple.shade700, width: 2.5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.red.shade300, width: 2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.red.shade700, width: 2.5),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.calendar_today,
+                      color: Colors.purple,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                      horizontal: 20,
+                    ),
+                  ),
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2040),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: Colors.purple,
+                              onPrimary: Colors.white,
+                              onSurface: Colors.black,
+                            ),
+                            textButtonTheme: TextButtonThemeData(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.purple,
+                              ),
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
 
+                    if (pickedDate != null) {
+                      String formattedDate =
+                          "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                      _dataController.text = formattedDate;
+                    }
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Inserisci la data";
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 20),
                 SelectVoto(
-                    onSelected: (selectedVoto) {
-                        setState(() {
-                            _selectedVoto = selectedVoto!;
-                        });
-                    },
+                  onSelected: (selectedVoto) {
+                    setState(() {
+                      _selectedVoto = selectedVoto!;
+                    });
+                  },
                 ),
                 const SizedBox(height: 20),
                 Center(
@@ -632,8 +782,12 @@ Future<bool> sendVoto(Map<String, dynamic> voto) async {
                     onPressed: _saveVoto,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 40,
+                        horizontal: 50,
                         vertical: 15,
                       ),
                     ),
@@ -664,6 +818,7 @@ class _SelectMateria extends State<SelectMateria> {
   String? _selectedMateria;
   List<Map<String, dynamic>> _materie = [];
   bool _isLoadingMaterie = true;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -673,11 +828,18 @@ class _SelectMateria extends State<SelectMateria> {
 
   Future<void> _fetchMaterie() async {
     try {
+      String? token = await _storage.read(key: "auth_token");
+      if (token == null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+        return;
+      }
       final response = await http.get(
         Uri.parse('http://184.174.34.61:20001/api/materie'),
         headers: {
           'Content-Type': 'application/json',
-          'token': '9d49670969b15d3bb62296fc25e3a8b1',
+          'token': token,
         },
       );
 
@@ -722,8 +884,13 @@ class _SelectMateria extends State<SelectMateria> {
             value: _selectedMateria,
             items: _materie.map((materia) {
               return DropdownMenuItem(
-                value: materia['nome'] as String,
-                child: Text(materia['nomeCompleto'] as String), 
+                value: materia['id'].toString(),
+                child: Text(
+                  materia['nomeCompleto'] as String,
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -751,7 +918,8 @@ class _SelectMateria extends State<SelectMateria> {
                 borderRadius: BorderRadius.circular(15),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple.shade700, width: 2.5),
+                borderSide:
+                    BorderSide(color: Colors.purple.shade700, width: 2.5),
                 borderRadius: BorderRadius.circular(15),
               ),
               errorBorder: OutlineInputBorder(
@@ -768,7 +936,7 @@ class _SelectMateria extends State<SelectMateria> {
               ),
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 15,
-                horizontal: 20,
+                horizontal: 0,
               ),
             ),
             validator: (value) {
@@ -782,6 +950,7 @@ class _SelectMateria extends State<SelectMateria> {
 }
 
 
+
 class SelectVoto extends StatefulWidget {
   final Function(String?) onSelected;
 
@@ -790,7 +959,6 @@ class SelectVoto extends StatefulWidget {
   @override
   State<SelectVoto> createState() => _SelectVoto();
 }
-
 
 class _SelectVoto extends State<SelectVoto> {
   String? _selectedVoto;
@@ -874,4 +1042,255 @@ class _SelectVoto extends State<SelectVoto> {
   }
 }
 
+
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+//await _storage.write(key: "auth_token", value: '9d49670969b15d3bb62296fc25e3a8b1');
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final String username = _usernameController.text;
+    final String password = _passwordController.text;
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://184.174.34.61:20001/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token'];
+
+        await _storage.write(key: "auth_token", value: token);
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Credenziali errate!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore di connessione: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.purple.shade50,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Accedi',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        labelText: "Username",
+                        labelStyle: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.purple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        hintText: "Inserisci il tuo username",
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        filled: true,
+                        fillColor: Colors.purple.shade50,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.purple.shade200, width: 2),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.purple.shade700, width: 2.5),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.red.shade300, width: 2),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.red.shade700, width: 2.5),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.person,
+                          color: Colors.purple,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 20,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserisci il tuo username';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        labelStyle: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.purple,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        hintText: "Inserisci password",
+                        hintStyle: const TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        filled: true,
+                        fillColor: Colors.purple.shade50,
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.purple.shade200, width: 2),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.purple.shade700, width: 2.5),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.red.shade300, width: 2),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.red.shade700, width: 2.5),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.lock,
+                          color: Colors.purple,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                          horizontal: 20,
+                        ),
+                      ),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Inserisci la tua password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : ElevatedButton(
+                            onPressed: _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.purple,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 50,
+                                vertical: 15,
+                              ),
+                            ),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            await _storage.delete(key: "auth_token");
+
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          },
+          child: const Text('Logout'),
+        ),
+      ),
+    );
+  }
+}
 
