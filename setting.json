@@ -1,0 +1,11 @@
+{
+    "db": {
+        "host": "fix",
+        "database": "fix",
+        "username": "fix",
+        "password": "fix"
+    },
+    "server": {
+        "port": 3000
+    }
+}
