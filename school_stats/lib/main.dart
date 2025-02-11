@@ -7,7 +7,6 @@ void main() {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -51,9 +50,6 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-
-
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -81,46 +77,46 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    //   appBar: AppBar(
-    //     // title: const Text('School Stats'),
-    //     title: const Text(
-    //         'School Stats',
-    //         style: TextStyle(
-    //           color: Colors.white,
-    //           fontSize: 24,
-    //           fontWeight: FontWeight.bold,
-    //         ),
-    //     ),
-    //     backgroundColor: const Color.fromARGB(255, 249, 131, 249),
-    //   ),
-    appBar: AppBar(
-  title: const Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-       Icon(
-        Icons.school, 
-        color: Colors.white,
-      ),
-       SizedBox(width: 10),
-       Text(
-        'School Stats',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2, 
+      //   appBar: AppBar(
+      //     // title: const Text('School Stats'),
+      //     title: const Text(
+      //         'School Stats',
+      //         style: TextStyle(
+      //           color: Colors.white,
+      //           fontSize: 24,
+      //           fontWeight: FontWeight.bold,
+      //         ),
+      //     ),
+      //     backgroundColor: const Color.fromARGB(255, 249, 131, 249),
+      //   ),
+      appBar: AppBar(
+        title: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.school,
+              color: Colors.white,
+            ),
+            SizedBox(width: 10),
+            Text(
+              'School Stats',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 249, 91, 249),
+        elevation: 5,
+        shadowColor: Colors.purple.withOpacity(0.3),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
         ),
       ),
-    ],
-  ),
-  centerTitle: true,
-  backgroundColor: const Color.fromARGB(255, 249, 91, 249), 
-  elevation: 5, 
-  shadowColor: Colors.purple.withOpacity(0.3), 
-  shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
-  ),
-),
 
       body: _pages[_selectedIndex],
 // Barra di navigazione inferiore
@@ -151,8 +147,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-
 
 class HomeGridPage extends StatefulWidget {
   const HomeGridPage({super.key});
@@ -289,8 +283,9 @@ class _HomeGridPageState extends State<HomeGridPage> {
       itemBuilder: (context, index) {
         final item = items[index];
         final double progressValue = (item['media'] ?? 0) / 10;
-        // final color = fromStringToColor(item["nomeCompleto"]);
-        final color = progressValue*10>8.0 ? Colors.green : (progressValue*10>6.0 ? Colors.orange : Colors.red);
+        final color = progressValue * 10 > 8.0
+            ? Colors.green
+            : (progressValue * 10 > 6.0 ? Colors.orange : Colors.red);
 
         return Container(
           decoration: BoxDecoration(
@@ -298,12 +293,18 @@ class _HomeGridPageState extends State<HomeGridPage> {
             boxShadow: const [
               BoxShadow(
                 color: Color.fromARGB(45, 0, 0, 0),
-                offset: Offset(-4, 4),
+                //color: fromStringToColor(item["nomeCompleto"]),
+                offset: Offset(-1, 1),
                 blurRadius: 10,
-                spreadRadius: 1,
+                spreadRadius: 0.5,
               ),
             ],
             borderRadius: BorderRadius.circular(15),
+            //colored border
+            border: Border.all(
+              //color: fromStringToColor(item["nomeCompleto"]),
+              width: 1,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(15),
@@ -311,7 +312,7 @@ class _HomeGridPageState extends State<HomeGridPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${(progressValue * 10).toStringAsFixed(2)}',
+                  (progressValue * 10).toStringAsFixed(2),
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -329,7 +330,7 @@ class _HomeGridPageState extends State<HomeGridPage> {
                     value: progressValue.clamp(0.0, 1.0),
                     backgroundColor: color.withOpacity(0.3),
                     valueColor: AlwaysStoppedAnimation<Color>(color),
-                    strokeWidth: 15,
+                    strokeWidth: 17,
                   ),
                 ),
                 const SizedBox(
@@ -338,9 +339,10 @@ class _HomeGridPageState extends State<HomeGridPage> {
                 ),
                 Text(
                   item["nome"],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 25,
-                    color: fromStringToColor(item["nomeCompleto"]),
+                    // color: fromStringToColor(item["nomeCompleto"]),
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -353,8 +355,6 @@ class _HomeGridPageState extends State<HomeGridPage> {
     );
   }
 }
-
-
 
 class VotiPage extends StatefulWidget {
   const VotiPage({super.key});
@@ -489,9 +489,9 @@ class _VotiPageState extends State<VotiPage> {
               child: Text(
                 items[index]['materia'].toString(),
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             title: Text(
@@ -507,8 +507,6 @@ class _VotiPageState extends State<VotiPage> {
     );
   }
 }
-
-
 
 class AddVotoPage extends StatefulWidget {
   const AddVotoPage({super.key});
@@ -535,7 +533,6 @@ class _AddVotoPageState extends State<AddVotoPage> {
       return false;
     }
     try {
-
       final response = await http.post(
         Uri.parse('http://184.174.34.61:20001/api/voti'),
         headers: {
@@ -803,8 +800,6 @@ class _AddVotoPageState extends State<AddVotoPage> {
   }
 }
 
-
-
 class SelectMateria extends StatefulWidget {
   final Function(String?) onSelected;
 
@@ -949,8 +944,6 @@ class _SelectMateria extends State<SelectMateria> {
   }
 }
 
-
-
 class SelectVoto extends StatefulWidget {
   final Function(String?) onSelected;
 
@@ -1041,8 +1034,6 @@ class _SelectVoto extends State<SelectVoto> {
     );
   }
 }
-
-
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -1237,7 +1228,36 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    // const SizedBox(height: 20),
+                    //go to registration page
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Non hai un account?',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const RegistrationPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Registrati',
+                            style: TextStyle(
+                              color: Colors.purple,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     _isLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
@@ -1269,8 +1289,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-
-
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -1294,3 +1312,253 @@ class SettingsPage extends StatelessWidget {
   }
 }
 
+class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
+  @override
+  State<RegistrationPage> createState() => _RegistrationPageState();
+}
+
+class _RegistrationPageState extends State<RegistrationPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+
+  bool _isLoading = false;
+
+  Future<void> _registration() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final String username = _usernameController.text;
+    final String password = _passwordController.text;
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://184.174.34.61:20001/api/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': username, 'password': password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String token = data['token'];
+
+        await _storage.write(key: "auth_token", value: token);
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Credenziali errate!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore di connessione: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: Colors.purple.shade50,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Registrati',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: "Username",
+                          labelStyle: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          hintText: "Inserisci il tuo username",
+                          hintStyle: const TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          filled: true,
+                          fillColor: Colors.purple.shade50,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.purple.shade200, width: 2),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.purple.shade700, width: 2.5),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.red.shade300, width: 2),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.red.shade700, width: 2.5),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.person,
+                            color: Colors.purple,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci il tuo username';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          labelStyle: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.purple,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          hintText: "Inserisci password",
+                          hintStyle: const TextStyle(
+                            color: Colors.grey,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          filled: true,
+                          fillColor: Colors.purple.shade50,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.purple.shade200, width: 2),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.purple.shade700, width: 2.5),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.red.shade300, width: 2),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: Colors.red.shade700, width: 2.5),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.lock,
+                            color: Colors.purple,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 15,
+                            horizontal: 20,
+                          ),
+                        ),
+                        obscureText: true,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Inserisci la tua password';
+                          }
+                          return null;
+                        },
+                      ),
+                    //   const SizedBox(height: 20),
+                      //go to login page
+                      Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Hai gia un account?',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Loggati',
+                            style: TextStyle(
+                              color: Colors.purple,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                      _isLoading
+                          ? const CircularProgressIndicator()
+                          : ElevatedButton(
+                              onPressed: _registration,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.purple,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 50,
+                                  vertical: 15,
+                                ),
+                              ),
+                              child: const Text(
+                                'Registrati',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+}
