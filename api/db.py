@@ -6,7 +6,6 @@ import readerSettings
 class Database:
     def __init__(self):
         rs = readerSettings.Setting()
-        print(rs)
         self.connection = mysql.connector.connect(
             host=rs.host,
             user=rs.username,
@@ -78,7 +77,7 @@ class Database:
     
     
     def addMateria(self, token, materia):
-        query = "insert into materie(nome, idU) values(%s, (select id from username where token = %s))"
+        query = "insert into materie(nome, idU) values(%s, (select id from user where token = %s))"
         try:    
             self.cursor.execute(query, (materia, token))
             self.connection.commit()

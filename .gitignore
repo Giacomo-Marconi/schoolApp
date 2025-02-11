@@ -1,12 +1,4 @@
-
-
-
-
-
-
-
-
-# Flutter/Dart specific
+ Flutter/Dart specific
 *.dart_tool/
 .packages
 .flutter-plugins

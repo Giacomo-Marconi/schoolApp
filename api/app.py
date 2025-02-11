@@ -22,7 +22,8 @@ def register():
     password = data['password']
     
     if(db.register(username, password)):
-        return jsonify({"status": "ok"}), 200
+        token = dbm.Database().getToken(username)
+        return jsonify({"status": "ok", "token": token}), 200
     
     return jsonify({"status": "error"}), 401
 
@@ -61,13 +62,13 @@ def addMateria():
     db = dbm.Database()
     data = request.get_json()
     if 'token' not in request.headers or 'materia' not in data:
-        return jsonify({"status": "error"}), 401
+        return jsonify({"status": "error no token"}), 401
     token = request.headers['token']
     materia = data['materia']
     if(db.checkToken(token)!=None):
         if(dbm.Database().addMateria(token, materia)):
             return jsonify({"status": "ok"}), 200
-    return jsonify({"status": "error"}), 401
+    return jsonify({"status": "error db"}), 401
 
 @app.route("/api/voti", methods=["GET"])
 def getVoti():
