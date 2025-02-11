@@ -9,7 +9,7 @@ flask_cors.CORS(app)
 #401 errato
 #200 corretto
 
-@app.route("/api/register", methods=["POST"])
+@app.route("/api/registration", methods=["POST"])
 def register():
     db = dbm.Database()
     data = request.get_json()
@@ -25,6 +25,7 @@ def register():
         return jsonify({"status": "ok"}), 200
     
     return jsonify({"status": "error"}), 401
+
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -42,6 +43,7 @@ def login():
         return jsonify({"token": token}), 200
     
     return jsonify({"status": "error"}), 401
+
 
 @app.route("/api/materie", methods=["GET"])
 def getMaterie():
@@ -95,41 +97,12 @@ def addVoto():
     voto = data['voto']
     date = data['data']
     descr = data['descr']
-    #idP = data['idP']
     idM = data['idM']
     
     if(db.checkToken(token)!=None):
         if(dbm.Database().addVoto(token, voto, date, descr, idM)):
             return jsonify({"status": "ok"}), 200
     return jsonify({"status": "error"}), 401
-
-@app.route("/api/professori", methods=["GET"])
-def getProfessori():
-    db = dbm.Database()
-    if 'token' not in request.headers:
-        return jsonify({"status": "error"}), 401
-    token = request.headers['token']
-    if(db.checkToken(token)!=None):
-        professori = dbm.Database().getProfessori(token)
-        return jsonify({"professori": professori}), 200
-    return jsonify({"status": "error"}), 401
-
-@app.route("/api/professori", methods=["POST"])
-def addProfessore():
-    db = dbm.Database()
-    data = request.get_json()
-    if 'token' not in request.headers or 'nome' not in data or 'cognome' not in data or 'idM' not in data:
-        return jsonify({"status": "error"}), 401
-    token = request.headers['token']
-    nome = data['nome']
-    cognome = data['cognome']
-    idM = data['idM']
-    if(db.checkToken(token)!=None):
-        if(dbm.Database().addProfessore(token, nome, cognome, idM)):
-            return jsonify({"status": "ok"}), 200
-    return jsonify({"status": "error"}), 401
-
-
 
 
 
